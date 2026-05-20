@@ -1,0 +1,8 @@
+numpy
+pandas
+scikit-learn
+scipy
+umap-learn
+matplotlib
+seaborn
+clustering-mi @ git+https://github.com/maxjerdee/clustering-mi.git

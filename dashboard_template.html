@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Spectral Clustering Optimisation Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+      :root {
+        --bg: #fff;
+        --bg2: #f5f5f5;
+        --tx: #1a1a1a;
+        --tx2: #666;
+        --tx3: #999;
+        --bd: #e0e0e0;
+        --accent: #534ab7;
+        --green: #1d9e75;
+        --red: #e24b4a;
+        --orange: #d85a30;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1a1a1a;
+          --bg2: #252525;
+          --tx: #e8e8e8;
+          --tx2: #aaa;
+          --tx3: #777;
+          --bd: #3a3a3a;
+          --accent: #8b80e0;
+        }
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--tx);
+        line-height: 1.6;
+      }
+      .w {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+      }
+      h1 {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      h2 {
+        font-size: 20px;
+        font-weight: 500;
+        margin: 2.5rem 0 1rem;
+      }
+      p {
+        font-size: 15px;
+        color: var(--tx2);
+        margin-bottom: 1rem;
+      }
+      .sub {
+        font-size: 15px;
+        color: var(--tx2);
+        margin-bottom: 2rem;
+      }
+      .g {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        margin-bottom: 1.5rem;
+      }
+      .c {
+        background: var(--bg2);
+        border-radius: 8px;
+        padding: 1rem;
+      }
+      .cl {
+        font-size: 13px;
+        color: var(--tx3);
+      }
+      .cv {
+        font-size: 22px;
+        font-weight: 500;
+      }
+      select {
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--bd);
+        background: var(--bg);
+        color: var(--tx);
+        font-size: 14px;
+      }
+      .cw {
+        position: relative;
+        width: 100%;
+      }
+      .leg {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin: 8px 0 1.5rem;
+        font-size: 12px;
+        color: var(--tx3);
+      }
+      .leg span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+      }
+      .cir {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        margin-bottom: 1rem;
+      }
+      table td {
+        padding: 8px 12px;
+      }
+      .fm {
+        background: var(--bg2);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        font-family: monospace;
+        font-size: 14px;
+        line-height: 2;
+        margin: 1rem 0 1.5rem;
+      }
+      hr.d {
+        border: none;
+        border-top: 1px solid var(--bd);
+        margin: 2.5rem 0;
+      }
+      .ctl {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .ctl label {
+        font-size: 14px;
+        color: var(--tx2);
+      }
+      canvas.um {
+        border: 1px solid var(--bd);
+        border-radius: 8px;
+      }
+      .st {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        margin: 1rem 0;
+      }
+      .st th {
+        padding: 10px 12px;
+        text-align: left;
+        background: var(--bg2);
+        font-weight: 500;
+      }
+      .st td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--bd);
+      }
+      .st tr.best td {
+        font-weight: 600;
+        background: rgba(83, 74, 183, 0.06);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="w">
+      <h1>Spectral clustering optimisation</h1>
+      <p class="sub">
+        Full graph parameter search on student embeddings — evaluated with
+        reduced asymmetric NMI
+      </p>
+      <div class="g">
+        <div class="c">
+          <div class="cl">Algorithm</div>
+          <div class="cv" style="font-size: 16px">Spectral</div>
+        </div>
+        <div class="c">
+          <div class="cl">Best PCA</div>
+          <div class="cv">__PCA__</div>
+        </div>
+        <div class="c">
+          <div class="cl">Graph</div>
+          <div class="cv" style="font-size: 16px">NN=__NN__</div>
+        </div>
+        <div class="c">
+          <div class="cl">Optimal k</div>
+          <div class="cv" style="color: var(--accent)">__K__</div>
+        </div>
+        <div class="c">
+          <div class="cl">NMI (red. A)</div>
+          <div class="cv" style="color: var(--accent)">__NMI__</div>
+        </div>
+        <div class="c">
+          <div class="cl">Variance</div>
+          <div class="cv">__VAR__</div>
+        </div>
+      </div>
+      <h2>1. Search results</h2>
+      <p>
+        1,872 configurations: 6 PCA dims × 2 std × 4 grade weights × 13 graph
+        params × 3 k values.
+      </p>
+      <table class="st" id="sT"></table>
+      <h2>2. NMI (red. A) curves across k</h2>
+      <p>Top 5 spectral configs. Red dots = optimal k.</p>
+      <div class="ctl">
+        <label>Config</label
+        ><select id="cfgSel">
+          <option value="all" selected>All</option>
+        </select>
+      </div>
+      <div class="cw" style="height: 340px"><canvas id="nC"></canvas></div>
+      <div class="leg" id="nL"></div>
+      <h2>3. NMI at k=3, 4, 5</h2>
+      <div class="cw" style="height: 260px"><canvas id="bC"></canvas></div>
+      <div class="leg">
+        <span
+          ><span class="dot" style="background: rgba(136, 135, 128, 0.7)"></span
+          >k=3</span
+        ><span
+          ><span class="dot" style="background: rgba(83, 74, 183, 0.7)"></span
+          >k=4</span
+        ><span
+          ><span class="dot" style="background: rgba(29, 158, 117, 0.7)"></span
+          >k=5</span
+        >
+      </div>
+      <hr class="d" />
+      <h2>4. Contingency table & chi-square</h2>
+      <div class="ctl">
+        <label>Show</label
+        ><select id="vS">
+          <option value="observed" selected>Observed</option>
+          <option value="expected">Expected</option>
+          <option value="diff">O−E</option>
+          <option value="contrib">(O−E)²/E</option>
+        </select>
+      </div>
+      <div id="tW"></div>
+      <div class="g">
+        <div class="c">
+          <div class="cl">χ²</div>
+          <div class="cv" id="c2"></div>
+        </div>
+        <div class="c">
+          <div class="cl">df</div>
+          <div class="cv" id="df"></div>
+        </div>
+        <div class="c">
+          <div class="cl">p-value</div>
+          <div class="cv" id="pv"></div>
+        </div>
+        <div class="c">
+          <div class="cl">Cramér's V</div>
+          <div class="cv" id="vv"></div>
+        </div>
+        <div class="c">
+          <div class="cl">Correlated?</div>
+          <div class="cv" style="color: var(--green)" id="co"></div>
+        </div>
+      </div>
+      <div class="fm">
+        E<sub>ij</sub>=(row<sub>i</sub>×col<sub>j</sub>)/N &nbsp; χ²=Σ(O−E)²/E
+        &nbsp; df=(r−1)(c−1)
+      </div>
+      <div
+        id="sw"
+        style="
+          font-size: 14px;
+          color: var(--tx2);
+          line-height: 1.8;
+          margin-bottom: 2rem;
+        "
+      ></div>
+      <hr class="d" />
+      <h2>5. UMAP</h2>
+      <div class="ctl">
+        <label>Colour</label
+        ><select id="uS">
+          <option value="cluster" selected>Cluster</option>
+          <option value="level">Understanding level</option>
+        </select>
+      </div>
+      <canvas id="uC" class="um" width="680" height="500"></canvas>
+      <div class="leg" id="uL"></div>
+      <hr class="d" />
+      <h2>6. Grade effect</h2>
+      <p>Purple = no grade, orange = grade weight 3.</p>
+      <div class="cw" style="height: 320px"><canvas id="gC"></canvas></div>
+      <div class="leg" id="gL"></div>
+      <hr class="d" />
+      <h2>References</h2>
+      <ul>
+        <li>
+          Jerdee, M., Kirkley, A. &amp; Newman, M. (2025). Normalized mutual
+          information is a biased measure for classification and community
+          detection. <em>Nature Communications</em>, 16, 11268.
+        </li>
+        <li>
+          Vinh, N.X., Epps, J. &amp; Bailey, J. (2010). Information theoretic
+          measures for clusterings comparison: Variants, properties,
+          normalization and correction for chance. <em>JMLR</em>, 11, 2837–2854.
+        </li>
+        <li>
+          Vinh, N.X., Epps, J. &amp; Bailey, J. (2009). Information theoretic
+          measures for clusterings comparison: Is a correction for chance
+          necessary? ICML 2009.
+        </li>
+      </ul>
+      <p style="text-align: center; color: var(--tx3); font-size: 13px">
+        Jerdee et al. (2025) <em>Nature Comms.</em> · Vinh et al. (2010)
+        <em>JMLR</em>
+      </p>
+    </div>
+    <script>
+      const D = __DATA_JSON__;
+      const dk = matchMedia("(prefers-color-scheme:dark)").matches,
+        gC_ = dk ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.06)",
+        tC_ = dk ? "rgba(255,255,255,.5)" : "rgba(0,0,0,.45)";
+      function oI(a) {
+        let m = -999,
+          i = 0;
+        a.forEach((v, j) => {
+          if (v > m) {
+            m = v;
+            i = j;
+          }
+        });
+        return i;
+      }
+
+      // S1
+      (function () {
+        const t = document.getElementById("sT");
+        let h =
+          "<tr><th>Configuration</th><th>k</th><th>NMI (red.A)</th><th>NMI (sym.)</th><th>Notes</th></tr>";
+        D.searchSummary.forEach((r) => {
+          const b = r.note === "Best overall" ? ' class="best"' : "";
+          h += `<tr${b}><td>${r.config}</td><td>${r.k}</td><td>${r.nmi_red.toFixed(4)}</td><td>${r.nmi_sym.toFixed(4)}</td><td>${r.note}</td></tr>`;
+        });
+        t.innerHTML = h;
+      })();
+
+      // S2
+      const sel = document.getElementById("cfgSel");
+      D.cfgLabels.forEach((l, i) => {
+        const o = document.createElement("option");
+        o.value = i;
+        o.text = l;
+        sel.appendChild(o);
+      });
+      function bD(f) {
+        const s = f === "all" ? D.cfgLabels.map((_, i) => i) : [parseInt(f)];
+        return s.map((i) => {
+          const oi = oI(D.cfgCurves[i]);
+          return {
+            label: D.cfgLabels[i],
+            data: D.cfgCurves[i],
+            borderColor: D.cfgColors[i],
+            backgroundColor: "transparent",
+            pointBackgroundColor: D.cfgCurves[i].map((_, j) =>
+              j === oi ? "#E24B4A" : D.cfgColors[i],
+            ),
+            pointRadius: D.cfgCurves[i].map((_, j) => (j === oi ? 7 : 3)),
+            pointBorderColor: D.cfgCurves[i].map((_, j) =>
+              j === oi ? "#E24B4A" : D.cfgColors[i],
+            ),
+            borderWidth: i === 0 ? 2.5 : 1.5,
+            tension: 0.3,
+          };
+        });
+      }
+      function bL(f) {
+        const s = f === "all" ? D.cfgLabels.map((_, i) => i) : [parseInt(f)];
+        document.getElementById("nL").innerHTML =
+          s
+            .map((i) => {
+              const k = D.kRange[oI(D.cfgCurves[i])],
+                v = Math.max(...D.cfgCurves[i]);
+              return `<span><span class="dot" style="background:${D.cfgColors[i]};"></span>${D.cfgLabels[i]} → k=${k} (${v.toFixed(3)})</span>`;
+            })
+            .join("") +
+          '<span><span class="cir" style="background:#E24B4A;"></span>Optimal</span>';
+      }
+      const nCh = new Chart(document.getElementById("nC"), {
+        type: "line",
+        data: { labels: D.kRange.map(String), datasets: bD("all") },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: (c) => "k=" + c[0].label,
+                label: (c) => c.dataset.label + ": " + c.parsed.y.toFixed(4),
+              },
+            },
+          },
+          scales: {
+            x: {
+              title: { display: true, text: "k", color: tC_ },
+              grid: { color: gC_ },
+              ticks: { color: tC_, autoSkip: false },
+            },
+            y: {
+              title: { display: true, text: "NMI (red. A)", color: tC_ },
+              grid: { color: gC_ },
+              ticks: { color: tC_ },
+              min: -0.15,
+              max: 0.45,
+            },
+          },
+        },
+      });
+      bL("all");
+      sel.addEventListener("change", function () {
+        nCh.data.datasets = bD(this.value);
+        nCh.update();
+        bL(this.value);
+      });
+
+      // S3
+      new Chart(document.getElementById("bC"), {
+        type: "bar",
+        data: {
+          labels: D.cfgLabels,
+          datasets: [
+            {
+              label: "k=3",
+              data: D.cfgCurves.map((c) => c[1]),
+              backgroundColor: "rgba(136,135,128,.7)",
+              borderRadius: 3,
+            },
+            {
+              label: "k=4",
+              data: D.cfgCurves.map((c) => c[2]),
+              backgroundColor: "rgba(83,74,183,.7)",
+              borderRadius: 3,
+            },
+            {
+              label: "k=5",
+              data: D.cfgCurves.map((c) => c[3]),
+              backgroundColor: "rgba(29,158,117,.7)",
+              borderRadius: 3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: tC_, font: { size: 10 } },
+            },
+            y: {
+              title: { display: true, text: "NMI", color: tC_ },
+              grid: { color: gC_ },
+              ticks: { color: tC_ },
+              min: 0,
+            },
+          },
+        },
+      });
+
+      // S4
+      const S = D.stats;
+      document.getElementById("c2").textContent = S.chi2;
+      document.getElementById("df").textContent = S.dof;
+      document.getElementById("pv").textContent = S.p_value.toExponential(1);
+      document.getElementById("vv").textContent = S.cramers_v;
+      document.getElementById("co").textContent = S.correlated
+        ? "Yes (1)"
+        : "No (0)";
+      function rT(v) {
+        let d, f, t;
+        if (v === "observed") {
+          d = S.observed;
+          f = (x) => x;
+          t = "Observed";
+        }
+        if (v === "expected") {
+          d = S.expected;
+          f = (x) => x.toFixed(1);
+          t = "Expected";
+        }
+        if (v === "diff") {
+          d = S.observed.map((r, i) =>
+            r.map((x, j) => +(x - S.expected[i][j]).toFixed(1)),
+          );
+          f = (x) => (x > 0 ? "+" : "") + x.toFixed(1);
+          t = "O−E";
+        }
+        if (v === "contrib") {
+          d = S.contributions;
+          f = (x) => x.toFixed(2);
+          t = "(O−E)²/E";
+        }
+        const mx = Math.max(...d.flat().map(Math.abs));
+        function bg(x) {
+          const i = Math.min(Math.abs(x) / mx, 1);
+          if (v === "observed" || v === "expected") return "transparent";
+          if (v === "diff")
+            return x > 0
+              ? `rgba(29,158,117,${dk ? i * 0.4 : i * 0.2})`
+              : `rgba(226,75,74,${dk ? i * 0.4 : i * 0.2})`;
+          return `rgba(83,74,183,${dk ? i * 0.5 : i * 0.15})`;
+        }
+        let h =
+          '<table><tr><td style="color:var(--tx2);font-weight:500;">' +
+          t +
+          "</td>";
+        S.col_labels.forEach((c) => {
+          h +=
+            '<td style="text-align:center;color:var(--tx2);font-weight:500;">' +
+            c +
+            "</td>";
+        });
+        h += '<td style="text-align:center;color:var(--tx3);">Total</td></tr>';
+        d.forEach((row, i) => {
+          h +=
+            '<tr><td style="color:var(--tx2);font-weight:500;">' +
+            S.row_labels[i] +
+            "</td>";
+          row.forEach((x) => {
+            h +=
+              '<td style="text-align:center;background:' +
+              bg(x) +
+              ';border-radius:4px;">' +
+              f(x) +
+              "</td>";
+          });
+          h +=
+            '<td style="text-align:center;color:var(--tx3);">' +
+            S.row_totals[i] +
+            "</td></tr>";
+        });
+        h += '<tr><td style="color:var(--tx3);">Total</td>';
+        S.col_totals.forEach((c) => {
+          h += '<td style="text-align:center;color:var(--tx3);">' + c + "</td>";
+        });
+        h +=
+          '<td style="text-align:center;color:var(--tx3);font-weight:500;">' +
+          S.grand_total +
+          "</td></tr></table>";
+        document.getElementById("tW").innerHTML = h;
+      }
+      rT("observed");
+      document.getElementById("vS").addEventListener("change", function () {
+        rT(this.value);
+      });
+
+      // S5
+      const cC = { 0: "#534AB7", 1: "#D85A30", 2: "#1D9E75", 3: "#BA7517" },
+        cL = { 1: "#888780", 2: "#85B7EB", 3: "#534AB7", 4: "#1D9E75" };
+      function dU(by) {
+        const cv = document.getElementById("uC"),
+          cx = cv.getContext("2d"),
+          W = cv.width,
+          H = cv.height,
+          p = 40;
+        cx.clearRect(0, 0, W, H);
+        const xs = D.umap.map((p) => p.x),
+          ys = D.umap.map((p) => p.y),
+          xn = Math.min(...xs),
+          xx = Math.max(...xs),
+          yn = Math.min(...ys),
+          yx = Math.max(...ys),
+          sx = (v) => ((v - xn) / (xx - xn)) * (W - 2 * p) + p,
+          sy = (v) => H - (((v - yn) / (yx - yn)) * (H - 2 * p) + p);
+        cx.strokeStyle = gC_;
+        cx.lineWidth = 0.5;
+        for (let i = 0; i <= 4; i++) {
+          const y = p + (i * (H - 2 * p)) / 4;
+          cx.beginPath();
+          cx.moveTo(p, y);
+          cx.lineTo(W - p, y);
+          cx.stroke();
+        }
+        const cm = by === "cluster" ? cC : cL,
+          kf = by === "cluster" ? "cluster" : "level";
+        D.umap.forEach((pt) => {
+          cx.beginPath();
+          cx.arc(sx(pt.x), sy(pt.y), 3.5, 0, Math.PI * 2);
+          cx.fillStyle = cm[pt[kf]] || "#999";
+          cx.globalAlpha = 0.65;
+          cx.fill();
+          cx.globalAlpha = 1;
+        });
+        cx.fillStyle = tC_;
+        cx.font = "12px sans-serif";
+        cx.textAlign = "center";
+        cx.fillText("UMAP 1", W / 2, H - 6);
+        cx.save();
+        cx.translate(12, H / 2);
+        cx.rotate(-Math.PI / 2);
+        cx.fillText("UMAP 2", 0, 0);
+        cx.restore();
+        const le = document.getElementById("uL");
+        if (by === "cluster")
+          le.innerHTML = Object.entries(cC)
+            .map(
+              ([k, c]) =>
+                `<span><span class="dot" style="background:${c};"></span>Cluster ${k}</span>`,
+            )
+            .join("");
+        else {
+          const cn = {};
+          D.umap.forEach((p) => {
+            cn[p.level] = (cn[p.level] || 0) + 1;
+          });
+          le.innerHTML = Object.entries(cL)
+            .map(
+              ([k, c]) =>
+                `<span><span class="dot" style="background:${c};"></span>Level ${k} (n=${cn[k] || 0})</span>`,
+            )
+            .join("");
+        }
+      }
+      dU("cluster");
+      document.getElementById("uS").addEventListener("change", function () {
+        dU(this.value);
+      });
+
+      // S6
+      const ge = D.gradeEffect,
+        bN = oI(ge.nmi_no_grade),
+        bG = oI(ge.nmi_with_grade);
+      new Chart(document.getElementById("gC"), {
+        type: "line",
+        data: {
+          labels: ge.k_range.map(String),
+          datasets: [
+            {
+              label: "No grade",
+              data: ge.nmi_no_grade,
+              borderColor: "#534AB7",
+              backgroundColor: "transparent",
+              pointBackgroundColor: ge.nmi_no_grade.map((_, i) =>
+                i === bN ? "#E24B4A" : "#534AB7",
+              ),
+              pointRadius: ge.nmi_no_grade.map((_, i) => (i === bN ? 7 : 4)),
+              pointBorderColor: ge.nmi_no_grade.map((_, i) =>
+                i === bN ? "#E24B4A" : "#534AB7",
+              ),
+              borderWidth: 2.5,
+              tension: 0.3,
+            },
+            {
+              label: "With grade",
+              data: ge.nmi_with_grade,
+              borderColor: "#D85A30",
+              backgroundColor: "transparent",
+              pointBackgroundColor: ge.nmi_with_grade.map((_, i) =>
+                i === bG ? "#E24B4A" : "#D85A30",
+              ),
+              pointRadius: ge.nmi_with_grade.map((_, i) => (i === bG ? 7 : 4)),
+              pointBorderColor: ge.nmi_with_grade.map((_, i) =>
+                i === bG ? "#E24B4A" : "#D85A30",
+              ),
+              borderWidth: 2,
+              borderDash: [6, 3],
+              tension: 0.3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              title: { display: true, text: "k", color: tC_ },
+              grid: { color: gC_ },
+              ticks: { color: tC_, autoSkip: false },
+            },
+            y: {
+              title: { display: true, text: "NMI", color: tC_ },
+              grid: { color: gC_ },
+              ticks: { color: tC_ },
+            },
+          },
+        },
+      });
+      document.getElementById("gL").innerHTML =
+        '<span><span class="dot" style="background:#534AB7;"></span>NN=10, no grade (best k=' +
+        ge.k_range[bN] +
+        ", " +
+        ge.nmi_no_grade[bN].toFixed(3) +
+        ')</span><span><span class="dot" style="background:#D85A30;"></span>NN=5 + grade (best k=' +
+        ge.k_range[bG] +
+        ", " +
+        ge.nmi_with_grade[bG].toFixed(3) +
+        ')</span><span><span class="cir" style="background:#E24B4A;"></span>Optimal</span>';
+    </script>
+  </body>
+</html>

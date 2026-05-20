@@ -1,0 +1,6 @@
+data.csv
+dashboard.html
+*_search.csv
+__pycache__/
+*.pyc
+.DS_Store
