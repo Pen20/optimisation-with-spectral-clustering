@@ -38,5 +38,10 @@ Graph parameters include:
 
 ## References
 
-- Jerdee et al. (2025) _Nature Communications_ 16
-- Vinh et al. (2010) _JMLR_ 1
+- Jerdee, M., Kirkley, A. & Newman, M. (2025). _Normalized mutual information is a biased measure for classification and community detection._ Nature Communications, 16, 11268.
+- Vinh, N.X., Epps, J. & Bailey, J. (2010). _Information theoretic measures for clusterings comparison: Variants, properties, normalization and correction for chance._ JMLR, 11, 2837–2854.
+- Vinh, N.X., Epps, J. & Bailey, J. (2009). _Information theoretic measures for clusterings comparison: Is a correction for chance necessary?_ ICML 2009.
+
+## License
+
+MIT
