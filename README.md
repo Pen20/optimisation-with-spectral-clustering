@@ -3,6 +3,9 @@
 End-to-end pipeline that finds the optimal number of clusters using **Spectral Clustering**
 with full graph construction parameter search, evaluated by the reduced asymmetric NMI.
 
+![Python](https://img.shields.io/badge/python-3.9+-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 ## Key results
 
 | Configuration            | k     | NMI (reduced asym.) | Graph                 | Notes            |
